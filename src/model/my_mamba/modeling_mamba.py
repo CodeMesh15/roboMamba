@@ -2082,10 +2082,28 @@ class MyMambaModel(MyMambaPreTrainedModel):
         hidden_states = inputs_embeds
 
         residual = None
+
         for layer in self.layers:
-            hidden_states, residual = layer(
-                hidden_states, residual, inference_params=inference_params
-            )
+            if self.gradient_checkpointing and self.training:
+                # Creating a custom forward function to handle the arguments
+                def create_custom_forward(module):
+                    def custom_forward(*inputs):
+                        return module(*inputs, inference_params=inference_params)
+                    return custom_forward
+
+                # Use checkpointing. 
+                # Note: I am using 'use_reentrant=False' as it is generally recommended for newer PyTorch versions
+                hidden_states, residual = torch.utils.checkpoint.checkpoint(
+                    create_custom_forward(layer),
+                    hidden_states,
+                    residual,
+                    use_reentrant=False 
+                )
+            else:
+                hidden_states, residual = layer(
+                    hidden_states, residual, inference_params=inference_params
+                )
+        # -------------------------------------------------------------
         if not self.fused_add_norm:
             residual = (hidden_states + residual) if residual is not None else hidden_states
             hidden_states = self.norm_f(residual.to(dtype=self.norm_f.weight.dtype))
