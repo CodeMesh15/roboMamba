@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 from packaging.version import parse, Version
 import subprocess
-
+import torch.utils.checkpoint 
 import math
 from functools import partial
 from typing import Callable, Optional, Sequence, Union, Tuple
