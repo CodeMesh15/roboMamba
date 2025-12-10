@@ -46,6 +46,7 @@ class MyMambaConfig(PretrainedConfig):
         bos_token_id=0,
         eos_token_id=0,
         pad_token_id=1,
+        gradient_checkpointing=False, # <- Im addin this parameter here
         **kwargs,
     ):
         super().__init__(bos_token_id=bos_token_id, eos_token_id=eos_token_id, pad_token_id=pad_token_id, **kwargs)
@@ -62,3 +63,5 @@ class MyMambaConfig(PretrainedConfig):
 
         self.ssm_cfg = ssm_cfg
         self.initializer_cfg = initializer_cfg
+        
+        self.gradient_checkpointing = gradient_checkpointing 
